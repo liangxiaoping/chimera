@@ -1,0 +1,3 @@
+Defaults:chimera !requiretty
+
+chimera ALL = (root) NOPASSWD: /usr/bin/chimera-rootwrap /etc/chimera/rootwrap.conf *

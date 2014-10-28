@@ -1,0 +1,36 @@
+#!/usr/bin/env python
+# vim: tabstop=4 shiftwidth=4 softtabstop=4
+#
+# Author: liangxiaoping
+#
+
+import os
+import sys
+
+# If ../chimera/__init__.py exists, add ../ to Python search path, so that
+# it will override what happens to be installed in /usr/(local/)lib/python...
+possible_topdir = os.path.normpath(os.path.join(os.path.abspath(sys.argv[0]),
+                                   os.pardir,
+                                   os.pardir))
+if os.path.exists(os.path.join(possible_topdir, 'chimera', '__init__.py')):
+    sys.path.insert(0, possible_topdir)
+
+import eventlet
+from oslo.config import cfg
+
+from chimera.openstack.common import log as logging
+from chimera import service
+from chimera import utils
+from chimera.task import service as task_service
+
+eventlet.monkey_patch()
+
+utils.read_config('chimera', sys.argv)
+logging.setup('chimera')
+
+CONF = cfg.CONF
+CONF.import_opt('workers', 'chimera.task', group='tm')
+
+server = task_service.Service.create(binary='chimera-tm')
+service.serve(server, workers=CONF['tm'].workers)
+service.wait()
